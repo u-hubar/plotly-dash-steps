@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import sys
+from pkg_resources import run_script
 from requests.exceptions import HTTPError
 import logging
 import pandas as pd
@@ -25,6 +26,19 @@ def parse_patient_info(response, patient_id):
     patient["Surname"] = response["lastname"]
     patient["Birthdate"] = response["birthdate"]
     patient["Disabled"] = response["disabled"]
+    sensors_list = response["trace"]["sensors"]
+    patient["L0 value"] = sensors_list[0]["value"]
+    patient["L0 anomaly"] = sensors_list[0]["anomaly"]
+    patient["L1 value"] = sensors_list[1]["value"]
+    patient["L1 anomaly"] = sensors_list[1]["anomaly"]
+    patient["L2 value"] = sensors_list[2]["value"]
+    patient["L2 anomaly"] = sensors_list[2]["anomaly"]
+    patient["R0 value"] = sensors_list[3]["value"]
+    patient["R0 anomaly"] = sensors_list[3]["anomaly"]
+    patient["R1 value"] = sensors_list[4]["value"]
+    patient["R1 anomaly"] = sensors_list[4]["anomaly"]
+    patient["R2 value"] = sensors_list[5]["value"]
+    patient["R2 anomaly"] = sensors_list[5]["anomaly"]
     return patient
 
 
@@ -40,18 +54,18 @@ async def get_patient_details_async(patient_id, session):
     return response_json
 
 
-async def run_program(patient_id, session):
+async def run_job(patient_id, session):
     try:
         response = await get_patient_details_async(patient_id, session)
-        patients_df = parse_patient_info(response, patient_id)
+        patient = parse_patient_info(response, patient_id)
     except Exception as err:
         logger.error(f"Exception occured: {err}")
-    return patients_df
+    return patient
 
 
 async def get_patients_df():
     async with aiohttp.ClientSession() as session:
-        patients = await asyncio.gather(*[run_program(patient_id, session) for patient_id in PATIENTS_ID_LIST])
+        patients = await asyncio.gather(*[run_job(patient_id, session) for patient_id in PATIENTS_ID_LIST])
         patients_df = pd.DataFrame(patients)
         patients_df = patients_df.sort_values(by=['ID'], ignore_index=True)
         return patients_df
