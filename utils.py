@@ -1,6 +1,23 @@
 import plotly.graph_objects as go
 
 
+def create_data_plot():
+    plot = go.Figure()
+    plot.update_layout(
+        height=350,
+        margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor="Black",
+        plot_bgcolor="Black",
+    )
+    plot.update_xaxes(
+        range=[0, 10],
+    )
+    plot.update_yaxes(
+        range=[0, 1500],
+    )
+    return plot
+
+
 def create_figure(app):
     feet = go.Figure()
     feet.update_layout(
@@ -39,19 +56,7 @@ def create_figure(app):
     return feet
 
 
-def create_sensor(fig, cord):
-    fig.add_shape(
-        type="circle",
-        x0=cord[0],
-        y0=cord[1],
-        x1=cord[2],
-        y1=cord[3],
-        line_color="Black",
-    )
-    return fig
-
-
-def add_dynamic_sensors_update(fig, patient, sensors, cord_x, cord_y):
+def сreate_dynamic_sensors(fig, patient, sensors, cord_x, cord_y):
     fig.add_scatter(
         x=cord_x,
         y=cord_y,
