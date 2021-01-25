@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 from dash.dependencies import Input, Output
 
-from data import get_patients_df_async
+from data import get_all_patient_sensors, get_patients_df
 from utils import (create_data_plot, create_figure, create_sensor_arrow,
-                   create_sensor_textbox, сreate_dynamic_sensors)
+                   create_sensor_textbox, update_data_figure,
+                   сreate_dynamic_sensors)
 
 app = dash.Dash(__name__)
 
@@ -45,11 +46,13 @@ app.layout = html.Div(children=[
                                 'backgroundColor': '#1E1E1E',
                                 },
                              placeholder='Select a plot type',
-                             options=[{'label': i, 'value': i} for i in ['History', 'Anomalies']]),
-                html.Br(),
+                             options=[{'label': i, 'value': i} for i in ['L0', 'L1',
+                                                                         'L2', 'R0',
+                                                                         'R1', 'R2',
+                                                                         'Anomalies']]),
                 dcc.Graph(id='data-plot', figure=data_plot, style={'margin-left': 'auto',
                                                                    'margin-right': 'auto',
-                                                                   'vertical-align': 'middle'})
+                                                                   'vertical-align': 'middle'}),
             ]),
         ]),
         html.Div(className='eight columns div-for-charts', children=[
@@ -64,7 +67,7 @@ app.layout = html.Div(children=[
     ]),
     dcc.Interval(
             id='interval-component',
-            interval=1*400,
+            interval=1*1000,
             n_intervals=0
         )
 ])
@@ -73,17 +76,17 @@ app.layout = html.Div(children=[
 @app.callback(Output('patient_selector', 'options'),
               Input('interval-component', 'n_intervals'))
 def update_dropdown_options(n):
-    patients_df = get_patients_df_async()
-    return [{'label': row["Full Name"], 'value': row["ID"]} for i, row in patients_df.iterrows()]
+    patients_df = get_patients_df()
+    return [{'label': f'{row["Name"]} {row["Surname"]}', 'value': row["ID"]} for i, row in patients_df.iterrows()]
 
 
 @app.callback(Output('div-for-bio', 'columns'),
               Output('div-for-bio', 'data'),
               Input('patient_selector', 'value'),
-              Input('interval-component', 'n_intervals'),)
+              Input('interval-component', 'n_intervals'))
 def update_patient_info(patient_id, n):
     if patient_id is not None:
-        patients_df = get_patients_df_async()
+        patients_df = get_patients_df()
         patient = patients_df[patients_df["ID"] == patient_id]
         patient = patient[["ID", "Name", "Surname", "Birthdate", "Disabled"]]
         patient_info = patient.T.reset_index()
@@ -96,24 +99,23 @@ def update_patient_info(patient_id, n):
 
 @app.callback(Output('feet-graph', 'figure'),
               Input('patient_selector', 'value'),
-              Input('interval-component', 'n_intervals'),)
+              Input('interval-component', 'n_intervals'))
 def update_feet_graph(patient_id, n):
     feet = create_figure(app)
     if patient_id is not None:
-        patients_df = get_patients_df_async()
-        patient = patients_df[patients_df["ID"] == patient_id]
+        patient_sensors = get_all_patient_sensors(patient_id)
 
-        feet = сreate_dynamic_sensors(feet, patient,
+        feet = сreate_dynamic_sensors(feet, patient_sensors,
                                       ['L0', 'L1', 'L2', 'R0', 'R1', 'R2'],
                                       [160, 125, 143, 227, 262, 244],
                                       [325, 295, 135, 325, 295, 135])
 
-        feet = create_sensor_textbox(feet, [10, 400, 97.5, 490], patient, 'L0')
-        feet = create_sensor_textbox(feet, [10, 220, 97.5, 310], patient, 'L1')
-        feet = create_sensor_textbox(feet, [10, 40, 97.5, 130], patient, 'L2')
-        feet = create_sensor_textbox(feet, [290, 400, 377.5, 490], patient, 'R0')
-        feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient, 'R1')
-        feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient, 'R2')
+        feet = create_sensor_textbox(feet, [10, 400, 97.5, 490], patient_sensors, 'L0')
+        feet = create_sensor_textbox(feet, [10, 220, 97.5, 310], patient_sensors, 'L1')
+        feet = create_sensor_textbox(feet, [10, 40, 97.5, 130], patient_sensors, 'L2')
+        feet = create_sensor_textbox(feet, [290, 400, 377.5, 490], patient_sensors, 'R0')
+        feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient_sensors, 'R1')
+        feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient_sensors, 'R2')
 
         feet = create_sensor_arrow(feet, [153, 335, 100, 430])
         feet = create_sensor_arrow(feet, [117, 287.5, 97.5, 265])
@@ -123,6 +125,18 @@ def update_feet_graph(patient_id, n):
         feet = create_sensor_arrow(feet, [251.5, 127.5, 288.5, 85])
 
     return feet
+
+
+@app.callback(Output('data-plot', 'figure'),
+              Input('plot_selector', 'value'),
+              Input('patient_selector', 'value'),
+              Input('interval-component', 'n_intervals'))
+def update_data_plot(plot_type, patient_id, n):
+    data_plot = create_data_plot()
+    if plot_type is not None and patient_id is not None:
+        sensors = get_all_patient_sensors(patient_id)
+        data_plot = update_data_figure(data_plot, plot_type, sensors)
+    return data_plot
 
 
 if __name__ == '__main__':

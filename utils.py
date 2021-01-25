@@ -1,21 +1,43 @@
 import plotly.graph_objects as go
+import plotly.express as px
+from database.db import Database
+
+db = Database('database/history.sqlite')
 
 
 def create_data_plot():
-    plot = go.Figure()
+    plot = px.line(template='plotly_dark')
     plot.update_layout(
-        height=350,
-        margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor="Black",
-        plot_bgcolor="Black",
+        height=360,
+        margin=dict(l=0, r=0, t=30, b=0),
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
     )
     plot.update_xaxes(
-        range=[0, 10],
+        showgrid=False,
+        zeroline=False,
+        visible=False,
     )
     plot.update_yaxes(
-        range=[0, 1500],
+        showgrid=False,
+        zeroline=False,
+        visible=False,
     )
     return plot
+
+
+def update_data_figure(fig, plot_type, sensors):
+    fig = px.line(sensors,
+                  x='Datetime',
+                  y=f'{plot_type} value',
+                  template='plotly_dark')
+    fig.update_layout(
+        height=360,
+        margin=dict(l=0, r=0, t=30, b=0),
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+    )
+    return fig
 
 
 def create_figure(app):
@@ -56,7 +78,8 @@ def create_figure(app):
     return feet
 
 
-def сreate_dynamic_sensors(fig, patient, sensors, cord_x, cord_y):
+def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
+    last_sensors = sensors[sensors['Datetime'] == sensors['Datetime'].max()]
     fig.add_scatter(
         x=cord_x,
         y=cord_y,
@@ -70,16 +93,29 @@ def сreate_dynamic_sensors(fig, patient, sensors, cord_x, cord_y):
                 [0.8, 'rgb(255,71,26)'],
                 [1, 'rgb(255,0,0)']
             ],
-            color=[patient[f"{sensor} value"].item() for sensor in sensors],
-            size=[50]*len(sensors),
+            color=[last_sensors[f"{s} value"].item() for s in sensors_list],
+            size=[50]*len(sensors_list),
             line=dict(width=2, color='#000000'),
             showscale=False
         ),
     )
+    for i, s in enumerate(sensors_list):
+        fig.add_annotation(
+            x=cord_x[i],
+            y=cord_y[i],
+            text=last_sensors[f"{s} value"].item(),
+            showarrow=False,
+            font=dict(
+                family="Courier New, monospace",
+                size=16,
+                color="#000000"
+            ),
+        )
     return fig
 
 
-def create_sensor_textbox(fig, cord, patient, sensor):
+def create_sensor_textbox(fig, cord, sensors, sensor):
+    last_sensors = sensors[sensors['Datetime'] == sensors['Datetime'].max()]
     fig.add_shape(
         type="rect",
         x0=cord[0],
@@ -90,15 +126,20 @@ def create_sensor_textbox(fig, cord, patient, sensor):
         line_width=3,
     )
 
+    mean = sensors[f"{sensor} value"].mean()
+    min = sensors[f"{sensor} value"].min()
+    max = sensors[f"{sensor} value"].max()
+
     text = [
         f"Sensor: {sensor}",
-        f"Value: {patient[f'{sensor} value'].item()}",
-        f"Anomaly: {patient[f'{sensor} anomaly'].item()}"
+        f"Mean: {mean:.2f}",
+        f"Min: {min}",
+        f"Max: {max}"
     ]
     for i, line in enumerate(text):
         fig.add_annotation(
             x=(cord[0] + ((cord[2] - cord[0]) / 2)),
-            y=(cord[3] - (i+1)*((cord[3] - cord[1]) / 4)),
+            y=(cord[3] - (i+1)*((cord[3] - cord[1]) / (len(text)+1))),
             text=line,
             showarrow=False,
             font=dict(

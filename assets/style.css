@@ -485,7 +485,7 @@
   }
   .Select-control, .Select-menu-outer, .Select-multi-value-wrapper, .select-up, .is-open .Select-control {
     background-color: #1E1E1E;
-    color: white;
+    color: rgb(48, 46, 46);
   
   }
   
@@ -568,6 +568,10 @@
   .SingleDatePicker_picker, .SingleDatePicker_picker_1, .SingleDatePicker_picker__directionLeft,
   .SingleDatePicker_picker__directionLeft_2{
     filter:invert(100%);
+  }
+
+  .hidden {
+    display: none !important;
   }
   
   /* For Mobile Phones and small screens ––––––––––––––––––––––––––––––––––––––––––––––––––*/
