@@ -1,0 +1,7 @@
+FROM python:3.8-alpine
+
+RUN apk update && apk add gcc build-base freetype-dev libpng-dev openblas-dev
+
+RUN pip install -U pip
+COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip install -r /usr/src/app/requirements.txt

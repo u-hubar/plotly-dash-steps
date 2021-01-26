@@ -41,6 +41,8 @@ def store_all_patients_data(db):
     for patient_id in PATIENTS_ID_LIST:
         response = requests.get(PATIENTS_MONITOR_URL + patient_id)
         response = response.json()
+        logger.info(response)
+        logger.info(response)
         store_patient_data(db, response, patient_id)
         store_sensors_data(db, response, patient_id)
 
@@ -77,8 +79,10 @@ def store_sensors_data(db, response, patient_id):
 
 
 if __name__ == '__main__':
+    logger.info('Initializing database...')
     db = Database(DB_FILE)
-    db.drop_tables()
+    # db.drop_tables()
+    logger.info('Creating tables...')
     db.create_tables()
     while True:
         db.drop_outdated_sensors_data(10)

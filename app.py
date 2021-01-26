@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from dash.dependencies import Input, Output
 
-from data import get_all_patient_sensors, get_patients_df
+from database.data import get_all_patient_sensors, get_patients_df
 from utils import (create_data_plot, create_figure, create_sensor_arrow,
                    create_sensor_textbox, update_data_figure,
                    сreate_dynamic_sensors)
@@ -140,4 +140,4 @@ def update_data_plot(plot_type, patient_id, n):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', port='5000', debug=True, threaded=True)
