@@ -45,7 +45,6 @@ def get_patient_sensors(patient_id):
                .order_by(Sensors.measured_at.desc())
                .first())
     sensors = pd.Series(sensors)
-    print(sensors)
     return sensors
 
 
@@ -90,16 +89,16 @@ async def get_patient_data_async(patient_id, session):
         response_json = await response.json()
         return response_json
     except HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
+        logger.error(f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(f"An error ocurred: {err}")
+        logger.error(f"An error ocurred: {err}")
 
 
 async def fetch_patient_data(patient_id, session):
     try:
         response = await get_patient_data_async(patient_id, session)
     except Exception as err:
-        print(f"Exception occured: {err}")
+        logger.error(f"Exception occured: {err}")
         pass
     patient = create_patient_object(response, patient_id)
     return patient
@@ -109,7 +108,7 @@ async def fetch_sensors_data(patient_id, session):
     try:
         response = await get_patient_data_async(patient_id, session)
     except Exception as err:
-        print(f"Exception occured: {err}")
+        logger.error(f"Exception occured: {err}")
         pass
     sensors = create_sensors_object(response, patient_id)
     return sensors
@@ -118,10 +117,8 @@ async def fetch_sensors_data(patient_id, session):
 async def store_all_patients_data():
     async with aiohttp.ClientSession() as session:
         while True:
-            logger.info("Dropping old data...")
             drop_outdated()
 
-            logger.info("Fetching data from Tesla API...")
             patients = await asyncio.gather(
                 *[
                     fetch_patient_data(patient_id, session)
@@ -135,7 +132,6 @@ async def store_all_patients_data():
                 ]
             )
 
-            logger.info("Storing data in DB...")
             db_session.add_all(patients)
             db_session.add_all(sensors)
             db_session.commit()
