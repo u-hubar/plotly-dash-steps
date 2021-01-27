@@ -1,8 +1,5 @@
 import plotly.graph_objects as go
 import plotly.express as px
-from database.db import Database
-
-db = Database('database/history.sqlite')
 
 
 def create_data_plot():
@@ -28,8 +25,8 @@ def create_data_plot():
 
 def update_data_figure(fig, plot_type, sensors):
     fig = px.line(sensors,
-                  x='Datetime',
-                  y=f'{plot_type} value',
+                  x='measured_at',
+                  y=f'{plot_type}_val',
                   template='plotly_dark')
     fig.update_layout(
         height=360,
@@ -79,7 +76,7 @@ def create_figure(app):
 
 
 def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
-    last_sensors = sensors[sensors['Datetime'] == sensors['Datetime'].max()]
+    last_sensors = sensors[sensors['measured_at'] == sensors['measured_at'].max()]
     fig.add_scatter(
         x=cord_x,
         y=cord_y,
@@ -93,7 +90,7 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
                 [0.8, 'rgb(255,71,26)'],
                 [1, 'rgb(255,0,0)']
             ],
-            color=[last_sensors[f"{s} value"].item() for s in sensors_list],
+            color=[last_sensors[f"{s}_val"].item() for s in sensors_list],
             size=[50]*len(sensors_list),
             line=dict(width=2, color='#000000'),
             showscale=False
@@ -103,7 +100,7 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
         fig.add_annotation(
             x=cord_x[i],
             y=cord_y[i],
-            text=last_sensors[f"{s} value"].item(),
+            text=last_sensors[f"{s}_val"].item(),
             showarrow=False,
             font=dict(
                 family="Courier New, monospace",
@@ -115,7 +112,6 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
 
 
 def create_sensor_textbox(fig, cord, sensors, sensor):
-    last_sensors = sensors[sensors['Datetime'] == sensors['Datetime'].max()]
     fig.add_shape(
         type="rect",
         x0=cord[0],
@@ -126,9 +122,9 @@ def create_sensor_textbox(fig, cord, sensors, sensor):
         line_width=3,
     )
 
-    mean = sensors[f"{sensor} value"].mean()
-    min = sensors[f"{sensor} value"].min()
-    max = sensors[f"{sensor} value"].max()
+    mean = sensors[f"{sensor}_val"].mean()
+    min = sensors[f"{sensor}_val"].min()
+    max = sensors[f"{sensor}_val"].max()
 
     text = [
         f"Sensor: {sensor}",

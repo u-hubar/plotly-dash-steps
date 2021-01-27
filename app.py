@@ -77,7 +77,7 @@ app.layout = html.Div(children=[
               Input('interval-component', 'n_intervals'))
 def update_dropdown_options(n):
     patients_df = get_patients_df()
-    return [{'label': f'{row["Name"]} {row["Surname"]}', 'value': row["ID"]} for i, row in patients_df.iterrows()]
+    return [{'label': f'{row["firstname"]} {row["lastname"]}', 'value': row.name} for i, row in patients_df.iterrows()]
 
 
 @app.callback(Output('div-for-bio', 'columns'),
@@ -87,13 +87,14 @@ def update_dropdown_options(n):
 def update_patient_info(patient_id, n):
     if patient_id is not None:
         patients_df = get_patients_df()
-        patient = patients_df[patients_df["ID"] == patient_id]
-        patient = patient[["ID", "Name", "Surname", "Birthdate", "Disabled"]]
+        patient = patients_df.iloc[patient_id, :]
+        patient = patient[["firstname", "lastname", "birthdate", "disabled"]]
+        patient.index = patient.index.str.capitalize()
         patient_info = patient.T.reset_index()
         patient_info.columns = ['Info', 'Value']
         return [{"name": i, "id": i} for i in patient_info.columns], patient_info.to_dict('records')
     else:
-        empty_df = pd.DataFrame(np.empty((5, 2), dtype=object), columns=['Info', 'Value'])
+        empty_df = pd.DataFrame(np.empty((4, 2), dtype=object), columns=['Info', 'Value'])
         return [{"name": i, "id": i} for i in empty_df.columns], empty_df.to_dict('records')
 
 
