@@ -1,15 +1,14 @@
 import datetime
+from functools import wraps
 
 from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
                         create_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-from sqlalchemy.pool import StaticPool
 
 engine = create_engine(
     "sqlite+pysqlite:///database/history.sqlite",
     connect_args={'check_same_thread': False},
-    poolclass=StaticPool,
     convert_unicode=True
 )
 db_session = scoped_session(
@@ -63,7 +62,17 @@ class Sensors(Base):
     R1_anom = Column(Boolean, nullable=False)
     R2_val = Column(Integer, nullable=False)
     R2_anom = Column(Boolean, nullable=False)
-    measured_at = Column(DateTime, default=datetime.datetime.utcnow)
+    measured_at = Column(DateTime, default=datetime.datetime.now)
+
+
+def database_session(f):
+    @wraps(f)
+    def _use_session(*args, **kwargs):
+        session = db_session()
+        result = f(session, *args, **kwargs)
+        db_session.remove()
+        return result
+    return _use_session
 
 
 def init_db():

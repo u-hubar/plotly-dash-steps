@@ -8,7 +8,7 @@ import aiohttp
 import pandas as pd
 from requests.exceptions import HTTPError
 
-from database.db import Patient, Sensors, db_session, init_db
+from database.db import Patient, Sensors, db_session, init_db, database_session
 
 logger = logging.getLogger("patients-monitor")
 logging.basicConfig(
@@ -28,20 +28,22 @@ def get_patients_df():
         db_session.bind,
         index_col='id'
     )
-    return patients
+    return patients.sort_index()
 
 
-def get_all_patient_sensors(patient_id):
+@database_session
+def get_all_patient_sensors(session, patient_id):
     sensors = pd.read_sql_query(
-        db_session.query(Sensors).filter_by(patient_id=patient_id).statement,
+        session.query(Sensors).filter_by(patient_id=patient_id).statement,
         db_session.bind,
         index_col='id'
     )
     return sensors
 
 
-def get_patient_sensors(patient_id):
-    sensors = (db_session.query(Sensors).filter_by(patient_id=patient_id)
+@database_session
+def get_patient_sensors(session, patient_id):
+    sensors = (session.query(Sensors).filter_by(patient_id=patient_id)
                .order_by(Sensors.measured_at.desc())
                .first())
     sensors = pd.Series(sensors)
@@ -72,26 +74,27 @@ def create_sensors_object(response, patient_id):
     return new_sensors
 
 
-def drop_outdated(minutes=10):
-    datetime_threshold = datetime.datetime.utcnow() - datetime.timedelta(
+@database_session
+def drop_outdated(session, minutes=10):
+    datetime_threshold = datetime.datetime.now() - datetime.timedelta(
         minutes=minutes
     )
-    db_session.query(Sensors).filter(
+    session.query(Sensors).filter(
         Sensors.measured_at < datetime_threshold
     ).delete()
-    db_session.commit()
+    session.commit()
 
 
 async def get_patient_data_async(patient_id, session):
     url = PATIENTS_MONITOR_URL + patient_id
     try:
         response = await session.request(method="GET", url=url)
-        response_json = await response.json()
-        return response_json
     except HTTPError as http_err:
         logger.error(f"HTTP error occurred: {http_err}")
     except Exception as err:
         logger.error(f"An error ocurred: {err}")
+    response_json = await response.json()
+    return response_json
 
 
 async def fetch_patient_data(patient_id, session):
@@ -132,9 +135,11 @@ async def store_all_patients_data():
                 ]
             )
 
-            db_session.add_all(patients)
-            db_session.add_all(sensors)
-            db_session.commit()
+            database_session = db_session()
+            database_session.add_all(patients)
+            database_session.add_all(sensors)
+            database_session.commit()
+            db_session.remove()
             sleep(0.9)
 
 

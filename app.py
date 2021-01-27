@@ -8,7 +8,8 @@ from dash.dependencies import Input, Output
 
 from database.data import get_all_patient_sensors, get_patients_df
 from utils import (create_data_plot, create_figure, create_sensor_arrow,
-                   create_sensor_textbox, update_data_figure,
+                   create_sensor_textbox, update_history_figure,
+                   update_anomalies_figure,
                    сreate_dynamic_sensors)
 
 app = dash.Dash(__name__)
@@ -46,13 +47,50 @@ app.layout = html.Div(children=[
                                 'backgroundColor': '#1E1E1E',
                                 },
                              placeholder='Select a plot type',
-                             options=[{'label': i, 'value': i} for i in ['L0', 'L1',
-                                                                         'L2', 'R0',
-                                                                         'R1', 'R2',
+                             options=[{'label': i, 'value': i} for i in ['History',
                                                                          'Anomalies']]),
                 dcc.Graph(id='data-plot', figure=data_plot, style={'margin-left': 'auto',
                                                                    'margin-right': 'auto',
-                                                                   'vertical-align': 'middle'}),
+                                                                   'vertical-align': 'middle',
+                                                                   'padding-bottom': '30px'}),
+                dcc.Tabs(id='sensors-tabs', parent_className='black-tabs', className='black-tabs-container', value='L0', children=[
+                    dcc.Tab(
+                        label='L0',
+                        value='L0',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                    dcc.Tab(
+                        label='L1',
+                        value='L1',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                    dcc.Tab(
+                        label='L2',
+                        value='L2',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                    dcc.Tab(
+                        label='R0',
+                        value='R0',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                    dcc.Tab(
+                        label='R1',
+                        value='R1',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                    dcc.Tab(
+                        label='R2',
+                        value='R2',
+                        className='black-tab',
+                        selected_className='black-tab--selected'
+                    ),
+                ]),
             ]),
         ]),
         html.Div(className='eight columns div-for-charts', children=[
@@ -87,7 +125,7 @@ def update_dropdown_options(n):
 def update_patient_info(patient_id, n):
     if patient_id is not None:
         patients_df = get_patients_df()
-        patient = patients_df.iloc[patient_id, :]
+        patient = patients_df.loc[patient_id, :]
         patient = patient[["firstname", "lastname", "birthdate", "disabled"]]
         patient.index = patient.index.str.capitalize()
         patient_info = patient.T.reset_index()
@@ -118,25 +156,29 @@ def update_feet_graph(patient_id, n):
         feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient_sensors, 'R1')
         feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient_sensors, 'R2')
 
-        feet = create_sensor_arrow(feet, [153, 335, 100, 430])
-        feet = create_sensor_arrow(feet, [117, 287.5, 97.5, 265])
-        feet = create_sensor_arrow(feet, [135, 127.5, 99, 85])
-        feet = create_sensor_arrow(feet, [234, 335, 287.5, 430])
-        feet = create_sensor_arrow(feet, [269.5, 287.5, 290, 265])
-        feet = create_sensor_arrow(feet, [251.5, 127.5, 288.5, 85])
+        # feet = create_sensor_arrow(feet, [153, 335, 100, 430])
+        # feet = create_sensor_arrow(feet, [117, 287.5, 97.5, 265])
+        # feet = create_sensor_arrow(feet, [135, 127.5, 99, 85])
+        # feet = create_sensor_arrow(feet, [234, 335, 287.5, 430])
+        # feet = create_sensor_arrow(feet, [269.5, 287.5, 290, 265])
+        # feet = create_sensor_arrow(feet, [251.5, 127.5, 288.5, 85])
 
     return feet
 
 
 @app.callback(Output('data-plot', 'figure'),
-              Input('plot_selector', 'value'),
               Input('patient_selector', 'value'),
+              Input('plot_selector', 'value'),
+              Input('sensors-tabs', 'value'),
               Input('interval-component', 'n_intervals'))
-def update_data_plot(plot_type, patient_id, n):
+def update_data_plot(patient_id, plot_type, sensor_name, n):
     data_plot = create_data_plot()
-    if plot_type is not None and patient_id is not None:
+    if patient_id is not None and plot_type is not None:
         sensors = get_all_patient_sensors(patient_id)
-        data_plot = update_data_figure(data_plot, plot_type, sensors)
+        if plot_type == 'History':
+            data_plot = update_history_figure(data_plot, sensor_name, sensors)
+        elif plot_type == 'Anomalies':
+            data_plot = update_anomalies_figure(data_plot, sensor_name, sensors)
     return data_plot
 
 
