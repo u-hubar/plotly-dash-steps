@@ -8,7 +8,7 @@ import aiohttp
 import pandas as pd
 from requests.exceptions import HTTPError
 
-from database.db import Patient, Sensors, db_session, init_db, database_session
+from database.db import Patient, Sensors, database_session, db_session, init_db
 
 logger = logging.getLogger("patients-monitor")
 logging.basicConfig(

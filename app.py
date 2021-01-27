@@ -8,9 +8,8 @@ from dash.dependencies import Input, Output
 
 from database.data import get_all_patient_sensors, get_patients_df
 from utils import (create_data_plot, create_figure, create_sensor_arrow,
-                   create_sensor_textbox, update_history_figure,
-                   update_anomalies_figure,
-                   сreate_dynamic_sensors)
+                   create_sensor_textbox, update_anomalies_figure,
+                   update_history_figure, сreate_dynamic_sensors, parse_xaxis_range)
 
 app = dash.Dash(__name__)
 
@@ -138,8 +137,9 @@ def update_patient_info(patient_id, n):
 
 @app.callback(Output('feet-graph', 'figure'),
               Input('patient_selector', 'value'),
+              Input('data-plot', 'relayoutData'),
               Input('interval-component', 'n_intervals'))
-def update_feet_graph(patient_id, n):
+def update_feet_graph(patient_id, plot_x_range, n):
     feet = create_figure(app)
     if patient_id is not None:
         patient_sensors = get_all_patient_sensors(patient_id)
@@ -149,12 +149,14 @@ def update_feet_graph(patient_id, n):
                                       [160, 125, 143, 227, 262, 244],
                                       [325, 295, 135, 325, 295, 135])
 
-        feet = create_sensor_textbox(feet, [10, 400, 97.5, 490], patient_sensors, 'L0')
-        feet = create_sensor_textbox(feet, [10, 220, 97.5, 310], patient_sensors, 'L1')
-        feet = create_sensor_textbox(feet, [10, 40, 97.5, 130], patient_sensors, 'L2')
-        feet = create_sensor_textbox(feet, [290, 400, 377.5, 490], patient_sensors, 'R0')
-        feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient_sensors, 'R1')
-        feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient_sensors, 'R2')
+        x_range = parse_xaxis_range(plot_x_range)
+
+        feet = create_sensor_textbox(feet, [10, 400, 97.5, 490], patient_sensors, 'L0', x_range)
+        feet = create_sensor_textbox(feet, [10, 220, 97.5, 310], patient_sensors, 'L1', x_range)
+        feet = create_sensor_textbox(feet, [10, 40, 97.5, 130], patient_sensors, 'L2', x_range)
+        feet = create_sensor_textbox(feet, [290, 400, 377.5, 490], patient_sensors, 'R0', x_range)
+        feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient_sensors, 'R1', x_range)
+        feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient_sensors, 'R2', x_range)
 
         # feet = create_sensor_arrow(feet, [153, 335, 100, 430])
         # feet = create_sensor_arrow(feet, [117, 287.5, 97.5, 265])
@@ -170,15 +172,20 @@ def update_feet_graph(patient_id, n):
               Input('patient_selector', 'value'),
               Input('plot_selector', 'value'),
               Input('sensors-tabs', 'value'),
+              Input('data-plot', 'relayoutData'),
               Input('interval-component', 'n_intervals'))
-def update_data_plot(patient_id, plot_type, sensor_name, n):
+def update_data_plot(patient_id, plot_type, sensor_name, plot_x_range, n):
     data_plot = create_data_plot()
+
     if patient_id is not None and plot_type is not None:
         sensors = get_all_patient_sensors(patient_id)
+        x_range = parse_xaxis_range(plot_x_range)
+
         if plot_type == 'History':
-            data_plot = update_history_figure(data_plot, sensor_name, sensors)
+            data_plot = update_history_figure(data_plot, sensor_name, sensors, x_range)
         elif plot_type == 'Anomalies':
-            data_plot = update_anomalies_figure(data_plot, sensor_name, sensors)
+            data_plot = update_anomalies_figure(data_plot, sensor_name, sensors, x_range)
+
     return data_plot
 
 

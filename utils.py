@@ -23,7 +23,17 @@ def create_data_plot():
     return plot
 
 
-def update_history_figure(fig, plot_type, sensors):
+def parse_xaxis_range(plot_x_range):
+    x_range = None
+    if 'xaxis.range[0]' in plot_x_range.keys() and 'xaxis.range[1]' in plot_x_range.keys():
+        x_range = [
+            plot_x_range['xaxis.range[0]'],
+            plot_x_range['xaxis.range[1]']
+        ]
+    return x_range
+
+
+def update_history_figure(fig, plot_type, sensors, x_range):
     fig = px.line(
         sensors, x="measured_at", y=f"{plot_type}_val", template="plotly_dark"
     )
@@ -32,11 +42,20 @@ def update_history_figure(fig, plot_type, sensors):
         margin=dict(l=0, r=0, t=30, b=0),
         plot_bgcolor="rgba(0, 0, 0, 0)",
         paper_bgcolor="rgba(0, 0, 0, 0)",
+        yaxis=dict(
+            fixedrange=True
+        )
     )
+
+    if x_range is not None:
+        fig.update_xaxes(
+            type="date",
+            range=x_range,
+        )
     return fig
 
 
-def update_anomalies_figure(fig, sensor_name, sensors):
+def update_anomalies_figure(fig, sensor_name, sensors, x_range):
     sensor_anomalies = sensors[sensors[f"{sensor_name}_anom"] == 1]
     fig = px.line(
         sensor_anomalies, x="measured_at", y=f"{sensor_name}_val", template="plotly_dark"
@@ -47,6 +66,12 @@ def update_anomalies_figure(fig, sensor_name, sensors):
         plot_bgcolor="rgba(0, 0, 0, 0)",
         paper_bgcolor="rgba(0, 0, 0, 0)",
     )
+
+    if x_range is not None:
+        fig.update_xaxes(
+            type="date",
+            range=x_range,
+        )
     return fig
 
 
@@ -124,7 +149,7 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
     return fig
 
 
-def create_sensor_textbox(fig, cord, sensors, sensor):
+def create_sensor_textbox(fig, cord, sensors, sensor_name, x_range):
     fig.add_shape(
         type="rect",
         x0=cord[0],
@@ -135,12 +160,17 @@ def create_sensor_textbox(fig, cord, sensors, sensor):
         line_width=3,
     )
 
-    mean = sensors[f"{sensor}_val"].mean()
-    min = sensors[f"{sensor}_val"].min()
-    max = sensors[f"{sensor}_val"].max()
+    if x_range is not None:
+        x_min, x_max = x_range
+        boolean_mask = (sensors["measured_at"] > x_min) & (sensors["measured_at"] <= x_max)
+        sensors = sensors.loc[boolean_mask]
+
+    mean = sensors[f"{sensor_name}_val"].mean()
+    min = sensors[f"{sensor_name}_val"].min()
+    max = sensors[f"{sensor_name}_val"].max()
 
     text = [
-        f"Sensor: {sensor}",
+        f"Sensor: {sensor_name}",
         f"Mean: {mean:.2f}",
         f"Min: {min}",
         f"Max: {max}",
