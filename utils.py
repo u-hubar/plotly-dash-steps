@@ -2,83 +2,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-def create_data_plot():
-    plot = px.line(template="plotly_dark")
-    plot.update_layout(
-        height=360,
-        margin=dict(l=0, r=0, t=30, b=0),
-        plot_bgcolor="rgba(0, 0, 0, 0)",
-        paper_bgcolor="rgba(0, 0, 0, 0)",
-    )
-    plot.update_xaxes(
-        showgrid=False,
-        zeroline=False,
-        visible=False,
-    )
-    plot.update_yaxes(
-        showgrid=False,
-        zeroline=False,
-        visible=False,
-    )
-    return plot
-
-
-def parse_xaxis_range(plot_x_range):
-    x_range = None
-    if (
-        "xaxis.range[0]" in plot_x_range.keys()
-        and "xaxis.range[1]" in plot_x_range.keys()
-    ):
-        x_range = [
-            plot_x_range["xaxis.range[0]"],
-            plot_x_range["xaxis.range[1]"],
-        ]
-    return x_range
-
-
-def update_history_figure(fig, plot_type, sensors, x_range):
-    fig = px.line(
-        sensors, x="measured_at", y=f"{plot_type}_val", template="plotly_dark"
-    )
-    fig.update_layout(
-        height=360,
-        margin=dict(l=0, r=0, t=30, b=0),
-        plot_bgcolor="rgba(0, 0, 0, 0)",
-        paper_bgcolor="rgba(0, 0, 0, 0)",
-        yaxis=dict(fixedrange=True),
-    )
-
-    if x_range is not None:
-        fig.update_xaxes(
-            type="date",
-            range=x_range,
-        )
-    return fig
-
-
-def update_anomalies_figure(fig, sensor_name, sensors, x_range):
-    sensor_anomalies = sensors[sensors[f"{sensor_name}_anom"] == 1]
-    fig = px.line(
-        sensor_anomalies,
-        x="measured_at",
-        y=f"{sensor_name}_val",
-        template="plotly_dark",
-    )
-    fig.update_layout(
-        height=360,
-        margin=dict(l=0, r=0, t=30, b=0),
-        plot_bgcolor="rgba(0, 0, 0, 0)",
-        paper_bgcolor="rgba(0, 0, 0, 0)",
-    )
-
-    if x_range is not None:
-        fig.update_xaxes(
-            type="date",
-            range=x_range,
-        )
-    return fig
-
-
 def create_figure(app):
     feet = go.Figure()
     feet.update_layout(
@@ -196,5 +119,82 @@ def create_sensor_textbox(fig, cord, sensors, sensor_name, x_range):
             font=dict(
                 family="Courier New, monospace", size=16, color="#ffffff"
             ),
+        )
+    return fig
+
+
+def create_data_plot():
+    plot = px.line(template="plotly_dark")
+    plot.update_layout(
+        height=360,
+        margin=dict(l=0, r=0, t=30, b=0),
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+    )
+    plot.update_xaxes(
+        showgrid=False,
+        zeroline=False,
+        visible=False,
+    )
+    plot.update_yaxes(
+        showgrid=False,
+        zeroline=False,
+        visible=False,
+    )
+    return plot
+
+
+def parse_xaxis_range(plot_x_range):
+    x_range = None
+    if (
+        "xaxis.range[0]" in plot_x_range.keys()
+        and "xaxis.range[1]" in plot_x_range.keys()
+    ):
+        x_range = [
+            plot_x_range["xaxis.range[0]"],
+            plot_x_range["xaxis.range[1]"],
+        ]
+    return x_range
+
+
+def update_history_figure(fig, plot_type, sensors, x_range):
+    fig = px.line(
+        sensors, x="measured_at", y=f"{plot_type}_val", template="plotly_dark"
+    )
+    fig.update_layout(
+        height=360,
+        margin=dict(l=0, r=0, t=30, b=0),
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+        yaxis=dict(fixedrange=True),
+    )
+
+    if x_range is not None:
+        fig.update_xaxes(
+            type="date",
+            range=x_range,
+        )
+    return fig
+
+
+def update_anomalies_figure(fig, sensor_name, sensors, x_range):
+    sensor_anomalies = sensors[sensors[f"{sensor_name}_anom"] == 1]
+    fig = px.line(
+        sensor_anomalies,
+        x="measured_at",
+        y=f"{sensor_name}_val",
+        template="plotly_dark",
+    )
+    fig.update_layout(
+        height=360,
+        margin=dict(l=0, r=0, t=30, b=0),
+        plot_bgcolor="rgba(0, 0, 0, 0)",
+        paper_bgcolor="rgba(0, 0, 0, 0)",
+    )
+
+    if x_range is not None:
+        fig.update_xaxes(
+            type="date",
+            range=x_range,
         )
     return fig
