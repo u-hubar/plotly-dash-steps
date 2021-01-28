@@ -7,7 +7,7 @@ import pandas as pd
 from dash.dependencies import Input, Output
 
 from database.data import get_all_patient_sensors, get_patients_df
-from utils import (create_data_plot, create_figure, create_sensor_arrow,
+from utils import (create_data_plot, create_figure,
                    create_sensor_textbox, update_anomalies_figure,
                    update_history_figure, сreate_dynamic_sensors, parse_xaxis_range)
 
@@ -157,13 +157,6 @@ def update_feet_graph(patient_id, plot_x_range, n):
         feet = create_sensor_textbox(feet, [290, 400, 377.5, 490], patient_sensors, 'R0', x_range)
         feet = create_sensor_textbox(feet, [290, 220, 377.5, 310], patient_sensors, 'R1', x_range)
         feet = create_sensor_textbox(feet, [290, 40, 377.5, 130], patient_sensors, 'R2', x_range)
-
-        # feet = create_sensor_arrow(feet, [153, 335, 100, 430])
-        # feet = create_sensor_arrow(feet, [117, 287.5, 97.5, 265])
-        # feet = create_sensor_arrow(feet, [135, 127.5, 99, 85])
-        # feet = create_sensor_arrow(feet, [234, 335, 287.5, 430])
-        # feet = create_sensor_arrow(feet, [269.5, 287.5, 290, 265])
-        # feet = create_sensor_arrow(feet, [251.5, 127.5, 288.5, 85])
 
     return feet
 

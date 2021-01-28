@@ -25,10 +25,13 @@ def create_data_plot():
 
 def parse_xaxis_range(plot_x_range):
     x_range = None
-    if 'xaxis.range[0]' in plot_x_range.keys() and 'xaxis.range[1]' in plot_x_range.keys():
+    if (
+        "xaxis.range[0]" in plot_x_range.keys()
+        and "xaxis.range[1]" in plot_x_range.keys()
+    ):
         x_range = [
-            plot_x_range['xaxis.range[0]'],
-            plot_x_range['xaxis.range[1]']
+            plot_x_range["xaxis.range[0]"],
+            plot_x_range["xaxis.range[1]"],
         ]
     return x_range
 
@@ -42,9 +45,7 @@ def update_history_figure(fig, plot_type, sensors, x_range):
         margin=dict(l=0, r=0, t=30, b=0),
         plot_bgcolor="rgba(0, 0, 0, 0)",
         paper_bgcolor="rgba(0, 0, 0, 0)",
-        yaxis=dict(
-            fixedrange=True
-        )
+        yaxis=dict(fixedrange=True),
     )
 
     if x_range is not None:
@@ -58,7 +59,10 @@ def update_history_figure(fig, plot_type, sensors, x_range):
 def update_anomalies_figure(fig, sensor_name, sensors, x_range):
     sensor_anomalies = sensors[sensors[f"{sensor_name}_anom"] == 1]
     fig = px.line(
-        sensor_anomalies, x="measured_at", y=f"{sensor_name}_val", template="plotly_dark"
+        sensor_anomalies,
+        x="measured_at",
+        y=f"{sensor_name}_val",
+        template="plotly_dark",
     )
     fig.update_layout(
         height=360,
@@ -131,7 +135,13 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
                 [1, "rgb(255,0,0)"],
             ],
             color=[last_sensors[f"{s}_val"].item() for s in sensors_list],
-            size=[50] * len(sensors_list),
+            size=[
+                30
+                + int(
+                    50 * (last_sensors[f"{x}_val"] / sensors[f"{x}_val"].max())
+                )
+                for x in sensors_list
+            ],
             line=dict(width=2, color="#000000"),
             showscale=False,
         ),
@@ -162,7 +172,9 @@ def create_sensor_textbox(fig, cord, sensors, sensor_name, x_range):
 
     if x_range is not None:
         x_min, x_max = x_range
-        boolean_mask = (sensors["measured_at"] > x_min) & (sensors["measured_at"] <= x_max)
+        boolean_mask = (sensors["measured_at"] > x_min) & (
+            sensors["measured_at"] <= x_max
+        )
         sensors = sensors.loc[boolean_mask]
 
     mean = sensors[f"{sensor_name}_val"].mean()
@@ -185,17 +197,4 @@ def create_sensor_textbox(fig, cord, sensors, sensor_name, x_range):
                 family="Courier New, monospace", size=16, color="#ffffff"
             ),
         )
-    return fig
-
-
-def create_sensor_arrow(fig, cord):
-    fig.add_annotation(
-        x=cord[0],
-        y=cord[1],
-        ax=3 * (cord[2] - cord[0]),
-        ay=2 * (cord[1] - cord[3]),
-        arrowsize=1,
-        arrowwidth=2,
-        arrowcolor="#636363",
-    )
     return fig

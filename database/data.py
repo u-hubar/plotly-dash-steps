@@ -22,11 +22,20 @@ PATIENTS_ID_LIST = [
 ]
 
 
-def get_patients_df():
-    patients = pd.read_sql_table(
-        'patients',
+@database_session
+def get_patients_df(session):
+    patients = pd.read_sql_query(
+        session.query(Patient)
+        .with_entities(
+            Patient.id,
+            Patient.firstname,
+            Patient.lastname,
+            Patient.birthdate,
+            Patient.disabled,
+        )
+        .statement,
         db_session.bind,
-        index_col='id'
+        index_col="id",
     )
     return patients.sort_index()
 
@@ -36,16 +45,19 @@ def get_all_patient_sensors(session, patient_id):
     sensors = pd.read_sql_query(
         session.query(Sensors).filter_by(patient_id=patient_id).statement,
         db_session.bind,
-        index_col='id'
+        index_col="id",
     )
     return sensors
 
 
 @database_session
 def get_patient_sensors(session, patient_id):
-    sensors = (session.query(Sensors).filter_by(patient_id=patient_id)
-               .order_by(Sensors.measured_at.desc())
-               .first())
+    sensors = (
+        session.query(Sensors)
+        .filter_by(patient_id=patient_id)
+        .order_by(Sensors.measured_at.desc())
+        .first()
+    )
     sensors = pd.Series(sensors)
     return sensors
 
@@ -144,7 +156,6 @@ async def store_all_patients_data():
 
 
 if __name__ == "__main__":
-    logger.info("Initializing database...")
     init_db()
 
     loop = asyncio.new_event_loop()
