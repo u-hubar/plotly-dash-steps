@@ -157,7 +157,7 @@ async def store_all_patients_data():
 
 if __name__ == "__main__":
     init_db()
-
+    sleep(5)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(store_all_patients_data())

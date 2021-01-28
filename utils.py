@@ -48,6 +48,7 @@ def сreate_dynamic_sensors(fig, sensors, sensors_list, cord_x, cord_y):
         x=cord_x,
         y=cord_y,
         mode="markers",
+        hoverinfo="none",
         marker=dict(
             colorscale=[
                 [0, "rgb(255,255,255)"],
