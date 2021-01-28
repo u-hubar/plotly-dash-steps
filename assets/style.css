@@ -4,6 +4,7 @@
  - Typography
  - Links
  - Buttons
+ - Tabs
  - Forms
  - Lists
  - Code
@@ -274,6 +275,39 @@
     background-color: #1EAEDB;
     border-color: #1EAEDB;
   }
+  /* Tabs __________________________________________________ */
+  .black-tabs-container {
+      width: 100%;
+      height: 80%;
+  }
+  .black-tabs {
+      border-top-left-radius: 3px;
+      background-color: black;
+      border-bottom: 1px solid #333;
+  }
+
+  .black-tab {
+      color: white !important;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+      border-top: 1px solid black !important;
+      border-left: 1px solid black !important;
+      border-right: 1px solid black !important;
+      border-bottom: 1px solid black !important;
+      background-color: #333 !important;
+      padding: 12px !important;
+      font-family: "system-ui";
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+  }
+  .black-tab--selected {
+      color: white !important;
+      box-shadow: 1px 1px 0px #6f019b !important;
+      border-left: 1px solid #6f019b !important;
+      border-right: 1px solid #6f019b !important;
+      border-top: 3px solid #6f019b !important;
+  }
   /* Forms –––––––––––––––––––––––––––––––––––––––––––––––––– */
   input[type="email"], input[type="number"], input[type="search"], input[type="text"], input[type="tel"], input[type="url"], input[type="password"], textarea, select {
     height: 38px;
@@ -484,8 +518,8 @@
     padding-bottom: 12px;
   }
   .Select-control, .Select-menu-outer, .Select-multi-value-wrapper, .select-up, .is-open .Select-control {
-    background-color: #1E1E1E;
-    color: white;
+    background-color: #1E1E1E !important;
+    color: white !important;
   
   }
   
@@ -501,9 +535,9 @@
   }
   
   .has-value.Select--single>.Select-control .Select-value .Select-value-label, .has-value.is-pseudo-focused.Select--single>.Select-control .Select-value .Select-value-label {
-    color: white;
-    background: #1E1E1E;
-    background-color: #1E1E1E;
+    color: white !important;
+    background: #1E1E1E !important;
+    background-color: #1E1E1E !important;
   }
   ._dash-app-content {
     overflow-x: hidden;
@@ -568,6 +602,10 @@
   .SingleDatePicker_picker, .SingleDatePicker_picker_1, .SingleDatePicker_picker__directionLeft,
   .SingleDatePicker_picker__directionLeft_2{
     filter:invert(100%);
+  }
+
+  .hidden {
+    display: none !important;
   }
   
   /* For Mobile Phones and small screens ––––––––––––––––––––––––––––––––––––––––––––––––––*/

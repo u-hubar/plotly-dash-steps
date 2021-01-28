@@ -1,0 +1,1 @@
+sudo docker build -f Dockerfile-base -t dash_app_base:latest .

@@ -1,0 +1,6 @@
+requests
+aiohttp
+dash
+SQLAlchemy
+numpy
+pandas

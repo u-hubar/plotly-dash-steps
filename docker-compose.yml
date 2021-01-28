@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  database:
+    container_name: sqlite3
+    build:
+      context: ./database
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./database:/usr/src/database
+
+  dash:
+    container_name: dash
+    build:
+      context: ./
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+     - ./:/usr/src
+     - ./database:/usr/src/database
